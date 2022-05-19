@@ -1,0 +1,21 @@
+
+### QUESTION 1
+
+--What is the total amount each customer spent at the restaurant?
+
+````SQL
+SELECT customer_id, SUM(price) AS total_$_spent
+FROM sales
+LEFT JOIN menu
+ON sales.product_id = menu.product_id
+GROUP BY customer_id
+ORDER BY total_$_spent DESC;
+````
+
+#### SOLUTION
+
+| customer_id | total_$_spent |
+| ------------| --------------|
+| A           | 76            |
+| B           | 74            |
+| C           | 36            |
