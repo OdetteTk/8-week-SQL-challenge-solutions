@@ -3,7 +3,7 @@
 
 --What is the total amount each customer spent at the restaurant?
 
-````sql
+````
 SELECT customer_id, SUM(price) AS total_$_spent
 FROM sales
 LEFT JOIN menu
@@ -26,7 +26,7 @@ ORDER BY total_$_spent DESC;
 
 --How many days has each customer visited the restaurant?
 
-````sql
+````
 SELECT customer_id, COUNT(DISTINCT (order_date)) AS number_of_visits
 FROM sales
 GROUP BY customer_id;
@@ -39,3 +39,25 @@ GROUP BY customer_id;
 | A           | 4                |
 | B           | 6                |
 | C           | 2                |
+
+
+### QUESTION 4
+
+--What is the most purchased item on the menu and how many times was it purchased by all customers?
+
+````
+SELECT DISTINCT product_name, COUNT(sales.product_id)
+FROM sales
+LEFT JOIN menu
+ON sales.product_id = menu.product_id
+GROUP BY product_name
+ORDER BY count DESC
+LIMIT 1;
+````
+
+### ANSWER
+
+|product_name | count |
+| ----------- | ----- |
+|ramen        | 8     |
+
