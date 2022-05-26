@@ -12,7 +12,7 @@ GROUP BY customer_id
 ORDER BY total_$_spent DESC;
 ````
 
-#### ANSWER
+### ANSWER
 
 | customer_id | total_$_spent |
 | ----------- + --------------|
@@ -59,7 +59,7 @@ FROM first_purchase
 WHERE first_order = 1;
 ````
 
-#### ANSWER
+### ANSWER
 
 | customer_id | product_name |
 | ----------- + ------------ |
@@ -112,12 +112,95 @@ WHERE rank = 1;
 
 | customer_id | product_name | most_popular |
 | ----------- + ------------ + ------------ |
-|A            |	ramen	       |	3           |
-|B	          | ramen	       |	2           |
-|B            |	sushi      	 |	2           |
-|B           	| curry      	 |	2           |
+|A            |	ramen	     |	3           |
+|B	      | ramen	     |	2           |
+|B            |	sushi        |	2           |
+|B            | curry        |	2           |
 |C            |	ramen        |	3           |
 
 
-####QUESTION 6
+### QUESTION 6
 
+--Which item was purchased first by the customer after they became a member?
+
+````
+WITH first_membership_purchase AS (
+	SELECT s.customer_id,  m.product_name, s.order_date, ms.join_date,
+		DENSE_RANK () OVER (PARTITION BY s.customer_id ORDER BY s.order_date) AS order_rank
+	FROM Dannys_diner.sales s
+	JOIN Dannys_diner.menu m
+		ON s.product_id = m.product_id
+	JOIN Dannys_diner.members ms
+		ON s.customer_id = ms.customer_id
+	WHERE s.order_date >= ms.join_date
+	)
+SELECT customer_id, product_name
+FROM first_membership_purchase
+WHERE order_rank = 1;
+````
+
+### ANSWER
+
+| customer_id | product_name |
+| ----------- + ------------ |
+|A            |	curry	     |
+|B	      | sushi	     |
+
+*C is not a member so doesn't appear in the results
+
+
+### QUESTION 7
+
+--Which item was purchased just before the customer became a member?
+
+````
+WITH prior_membership_purchase AS (
+	SELECT s.customer_id,  m.product_name, s.order_date, ms.join_date,
+		DENSE_RANK () OVER (PARTITION BY s.customer_id ORDER BY s.order_date DESC) AS order_rank
+	FROM Dannys_diner.sales s
+	JOIN Dannys_diner.menu m
+		ON s.product_id = m.product_id
+	JOIN Dannys_diner.members ms
+		ON s.customer_id = ms.customer_id
+	WHERE s.order_date < ms.join_date
+	)
+SELECT customer_id, product_name
+FROM prior_membership_purchase
+WHERE order_rank = 1;
+````
+
+### ANSWER
+
+| customer_id | product_name |
+| ----------- + ------------ |
+|A            |	sushi	     |
+|A            |	curry	     |
+|B	      | sushi	     |
+
+
+### QUESTION 8
+
+--What is the total items and amount spent for each member before they became a member?
+
+````
+WITH total_prior_membership_purchases AS (
+	SELECT s.customer_id,  m.product_name, s.order_date, ms.join_date, m.price		
+	FROM Dannys_diner.sales s
+	JOIN Dannys_diner.menu m
+		ON s.product_id = m.product_id
+	JOIN Dannys_diner.members ms
+		ON s.customer_id = ms.customer_id
+	WHERE s.order_date < ms.join_date
+	)
+SELECT customer_id, COUNT(product_name) AS total_items, SUM(price) AS total_price
+FROM total_prior_membership_purchases
+GROUP BY customer_id
+ORDER BY customer_id;
+````
+
+### ANSWER
+
+| customer_id | total_items | total_price |
+| ----------- + ----------- + ------------|
+| A           | 2           | 25          |
+| B           | 3           | 40          |
